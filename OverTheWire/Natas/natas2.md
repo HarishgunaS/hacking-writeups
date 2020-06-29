@@ -1,0 +1,2 @@
+### Natas2
+When the source for this webpage is inspected, we can see that there is an image tag present. The image is located at "files/pixel.png". This shows us that there is a folder called files present on the domain. We can access this folder at this url: "http://natas2.natas.labs.overthewire.org/files/". In this folder we see there is also a users.txt file. Clicking on this file we can see username password pairs for various users, including natas3 with a password of sJIJNW6ucpu6HPZ1ZAchaDtwd7oGrD14.
