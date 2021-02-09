@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Leviathan0 Writeup</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <a class="navbar-brand" href="../../../index.html">Harish</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Projects</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Education</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Hacking</a>
+            </li>     
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Accomplishments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Notes</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+
+<div class="container font-weight-light my-5">
+ <h1>Leviathan0 Writeup</h1>
+ <p>
+     After sshing into leviathan0, the first thing I did was ls.
+     <pre class="bg-dark text-success" style="padding:10px"><code>$ ls</code></pre>
+     The directory appeared to be empty at first, but obviously that couldn't be the case.
+     <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ls -a</code>
+        <code>.  ..  .backup  .bash_logout  .bashrc  .profile</code>
+    </pre>
+    Other than the regular hidden files, there was another hidden directory named ".backup".
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ cd .backup</code>
+        <code>$ ls</code>
+        <code>bookmarks.html</code>
+        <code>$ cat bookmarks.html</code>
+    </pre>
+    The output of this file was way too long to parse visually.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ cat bookmarks.html | grep pass</code>
+        <code>&ltDT&gt&ltA HREF="http://leviathan.labs.overthewire.org/passwordus.html | This will be fixed later, the password for leviathan1 is rioGegei8m" ADD_DATE="1155384634" LAST_CHARSET="ISO-8859-1" ID="rdf:#$2wIU71"&gtpassword to leviathan1&lt/A&gt</code>
+    </pre>
+    The password of leviathan1 was revealed here as <code>rioGegei8m</code>.
+ </p>
+</div>
+</body>
+</html>

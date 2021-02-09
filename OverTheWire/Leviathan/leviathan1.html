@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Leviathan1 Writeup</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <a class="navbar-brand" href="../../../index.html">Harish</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Projects</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Education</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Hacking</a>
+            </li>     
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Accomplishments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Notes</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+
+<div class="container font-weight-light my-5">
+ <h1>Leviathan1 Writeup</h1>
+ <p>
+     <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ls</code>
+        <code>check</code>
+        <code>$ file check</code>
+        <code>check: setuid ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=c735f6f3a3a94adcad8407cc0fda40496fd765dd, not stripped</code>
+        <code>$ ./check</code>
+        <code>password: </code>
+    </pre>
+    The file program requested a password. The password might have been stored cleartext.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ strings check</code>
+    </pre>
+    The output was very long, mostly filled with common strings found in compiled C binaries. However, two strings seemed to be interesting: <code>secrf</code> and <code>love</code>. Thus, I tried both strings as possible passwords.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ./check</code>
+        <code>password: secrf</code>
+        <code>Wrong password, Good Bye ...</code>
+        <code>$ ./check</code>
+        <code>password: love</code>
+        <code>Wrong password, Good Bye ...</code>
+    </pre>
+    Definitely wasn't as easy as I thought it would be. After wasting a good amount of time trying useless things, I finally tried using ltrace.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ltrace ./check</code>
+        <code>__libc_start_main(0x804853b, 1, 0xffffd784, 0x8048610 &ltunfinished ...&gt</code>
+        <code>printf("password: ")                                                                 = 10</code>
+        <code>getchar(1, 0, 0x65766f6c, 0x646f6700password:  love</code>
+        <code>)                                     = 108</code>
+        <code>getchar(1, 0, 0x65766f6c, 0x646f6700)                                     = 111</code>
+        <code>getchar(1, 0, 0x65766f6c, 0x646f6700)                                     = 118</code>
+        <code>strcmp("lov", "sex")                                                      = -1</code>
+        <code>puts("Wrong password, Good Bye ..."Wrong password, Good Bye ...</code>
+        <code>)                                      = 29</code>
+        <code>+++ exited (status 0) +++</code>
+    </pre>
+    The <code>strcmp</code> call has revealed the password for <code>check</code>.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ./check</code>
+        <code>password: sex</code>
+        <code>$ whoami</code>
+        <code>leviathan2</code>
+        <code>$ cat /etc/leviathan_pass/leviathan2</code>
+        <code>ougahZi8Ta</code>
+    </pre>
+    
+ </p>
+</div>
+</body>
+</html>

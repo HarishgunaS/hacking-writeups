@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Leviathan3 Writeup</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <a class="navbar-brand" href="../../../index.html">Harish</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Projects</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Education</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Hacking</a>
+            </li>     
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Accomplishments</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../../../index.html">Notes</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+
+<div class="container font-weight-light my-5">
+ <h1>Leviathan3 Writeup</h1>
+ <p>
+     <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ls</code>
+        <code>level3</code>
+        <code>$ ./level3</code>
+        <code>Enter the password></code>
+        <code>bzzzzzzzzap. WRONG</code>
+        <code>strings level3</code>
+    </pre>
+    I didn't see anything that looked too promising in the strings output. I decided that I would check for a strcmp with the password using ltrace.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ ltrace ./level3</code>
+        <code>__libc_start_main(0x8048618, 1, 0xffffd784, 0x80486d0 <unfinished ...></code>
+        <code>strcmp("h0no33", "kakaka")                                                           = -1</code>
+        <code>printf("Enter the password> ")                                                       = 20</code>
+        <code>fgets(Enter the password> fasdf</code>
+        <code>"fasdf\n", 256, 0xf7fc55a0)                                                    = 0xffffd590</code>
+        <code>strcmp("fasdf\n", "snlprintf\n")                                                     = -1</code>
+        <code>puts("bzzzzzzzzap. WRONG"bzzzzzzzzap. WRONG</code>
+        <code>)                                                           = 19</code>
+        <code>+++ exited (status 0) +++</code>
+        <code>$ ./level3</code>
+        <code>Enter the password> snlprintf</code>
+        <code>[You've got shell]!</code>
+        <code>$</code>
+    </pre>
+    That was almost too easy compared to the last one.
+    <pre class="bg-dark text-success" style="padding:10px">
+        <code>$ whoami</code>
+        <code>leviathan4</code>
+        <code>$ cat /etc/leviathan_pass/leviathan4</code>
+        <code>vuH0coox6m</code>
+    </pre>
+    
+ </p>
+</div>
+</body>
+</html>
